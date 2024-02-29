@@ -1,0 +1,8 @@
+/target
+**/*.rs.bk
+.caddy_env
+*.zip
+*.pdf
+auto/
+*.tex
+.caddy_env
