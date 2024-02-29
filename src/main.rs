@@ -1,12 +1,18 @@
+#![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
+#[macro_use]
+extern crate log;
 
-#[get("/")]
-fn health_check() -> &'static str {
-    "Heath Check!"
-}
+mod server;
+mod routes;
 
-#[launch]
-fn rocket() -> _ {
-    rocket::build().mount("/", routes![health_check])
+use server::start_server;
+
+fn main() {
+    simple_logger::SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
+        .init()
+        .unwrap();
+    start_server().launch();
 } 
