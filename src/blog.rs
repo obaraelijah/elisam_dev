@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use select::document::Document;
 use std::path::PathBuf;
 use std::{ io, fs};
 use std::ffi::OsStr;
@@ -58,4 +59,13 @@ fn get_html_files(base: &str) -> Result<Vec<PathBuf>, io::Error> {
         }
     }
     Ok(html_files)
+}
+
+pub enum ParsingError {
+
+}
+
+pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingError> {
+    let file_contents = fs::read_to_string(&blog_file);
+
 }

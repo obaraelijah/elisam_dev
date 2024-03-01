@@ -1,12 +1,15 @@
 #![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
-#[macro_use]
 extern crate log;
+
+#[cfg(test)]
+mod test;
 
 mod server;
 mod routes;
 mod context;
+mod blog;
 
 use server::start_server;
 
