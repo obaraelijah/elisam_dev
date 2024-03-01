@@ -6,6 +6,7 @@ extern crate log;
 
 mod server;
 mod routes;
+mod context;
 
 use server::start_server;
 
