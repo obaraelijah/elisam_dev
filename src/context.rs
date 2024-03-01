@@ -2,6 +2,7 @@ use lazy_static::lazy_static;
 use std::collections::HashMap;
 use serde::Serialize;
 
+use crate::blog::{get_org_blog, OrgBlog, OrgModeHtml};
 
 /// BLOG_ROOT is the relative path to blog
 pub static BLOG_ROOT: &str = "blog/";
@@ -27,13 +28,17 @@ type TemplateMap = HashMap<&'static str, &'static str>;
 
 
 #[derive(Serialize, Debug)]
-pub struct SiteContext {
+pub struct SiteContext<'a> {
     /// base is the static key-value context of the website.
     /// All of the information in base comes from
     /// [STATIC_SITE_CONTEXT_KV](crate::context::STATIC_SITE_CONTEXT_KV)
     pub base: &'static SiteContextKv,
     /// kv is the dynamic key-value context of the website.
     pub kv: SiteContextKv,
+    /// blog is all blog related items, see [OrgBlog](crate::context::OrgBlog)
+    pub blog: &'static OrgBlog,
+    /// curr_blog is the current blog article, if applicable.
+    pub curr_blog: Option<&'a OrgModeHtml>,
 }
 
 macro_rules! site_context(
@@ -48,6 +53,9 @@ macro_rules! site_context(
     };
 );
 
+lazy_static! {
+    static ref STATIC_BLOG_ENTRIES: OrgBlog = get_org_blog(BLOG_ROOT);
+}
 
 lazy_static! {
     static ref STATIC_SITE_CONTEXT_KV: SiteContextKv = {
@@ -58,17 +66,22 @@ lazy_static! {
 }
 
 //get base context
-pub fn get_base_context(nav_href_uri: &str) -> SiteContext {
+pub fn get_base_context(nav_href_uri: &str) -> SiteContext<'_> {
     SiteContext {
         base: &STATIC_SITE_CONTEXT_KV,
-        // TODO: Not waste memory like this
+        // TODO: Not waste memory like this.
         kv: {
             let mut tmp = SiteContextKv::new();
             tmp.insert("nav_site_href".to_owned(), nav_href_uri.to_owned());
             tmp
         },
-
+        blog: &STATIC_BLOG_ENTRIES,
+        curr_blog: None,
     }
+}
+
+pub fn init_context() {
+    println!("{}", get_base_context("/").blog.blog_files.len());
 }
 
 macro_rules! template_map(
