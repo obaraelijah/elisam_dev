@@ -126,3 +126,7 @@ lazy_static! {
         "/resume" => "resume"
     };
 }
+
+pub fn get_template(uri: &str) -> &str {
+    TEMPLATE_MAP.get(uri).unwrap()
+}
