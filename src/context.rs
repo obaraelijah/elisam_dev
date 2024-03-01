@@ -59,9 +59,27 @@ lazy_static! {
 
 lazy_static! {
     static ref STATIC_SITE_CONTEXT_KV: SiteContextKv = {
-       site_context! {
-        "nav_site_href" =>  "/"
-       }  
+        site_context! {
+            "domain_name" =>  "realelijahobara.tech",
+            "nav_site_href" =>  "/",
+            "root_uri" =>  "/",
+            "blog_uri" =>  "/blog",
+            "resume_uri" =>  "/resume",
+            "linkedin_uri" =>  "/linkedin",
+            "github_uri" =>  "/github",
+            "resume_uri" =>  "/resume",
+            "resume_pdf_uri" =>  "/resume_pdf",
+            "rss_uri" =>  "/rss",
+            "crash_uri" =>  "/500",
+            "web_sep" =>  "--",
+            "admin_email" =>  "elijahobara357@gmail.com",
+            "full_name" =>  "Elijah Samson",
+            "internet_handle" =>  "elijahsam",
+            "my_email" =>  "elijahobara357@gmail.com",
+            "github_url" => "https://github.com/obaraelijah",
+            "github_repo_url" => "https://github.com/obaraelijah/elisam_dev",
+            "linkedin_url" => "https://www.linkedin.com/in/elijah-samson-16619912a/"
+        }
     };
 }
 
@@ -98,10 +116,13 @@ macro_rules! template_map(
 
 lazy_static! {
     pub static ref TEMPLATE_MAP: TemplateMap = template_map! {
-        "/" => "index"
+        "/" => "index",
+        "404" => "404",
+        "500" => "500",
+        "/blog" => "blog/blog_root",
+        "/linkedin" => "linkedin",
+        "/github" => "github",
+        "/resume_pdf" => "resume/elijah_resume.pdf",
+        "/resume" => "resume"
     };
-}
-
-pub fn get_template(uri: &str) -> &str {
-    TEMPLATE_MAP.get(uri).unwrap()
 }
