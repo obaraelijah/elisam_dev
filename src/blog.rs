@@ -65,6 +65,7 @@ fn get_html_files(base: &str) -> Result<Vec<PathBuf>, io::Error> {
     Ok(html_files)
 }
 
+#[derive(Debug, PartialEq)]
 pub enum ParsingError {
     CannotParseHtml(PathBuf),
     CannotFindTitle(PathBuf),
@@ -150,4 +151,25 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
         footnotes,
     })
 
+}
+
+pub fn get_org_mode_files(blog_root: &str) -> Vec<OrgModeHtml> {
+    match get_html_files(blog_root) {
+        Ok(org) => {
+            let html_res: Vec<_> = org.iter().map(|o| get_html_contents(&o)).collect();
+            let mut html_success: Vec<OrgModeHtml> = Vec::new();
+            for html in html_res {
+                match html {
+                    Ok(h) => html_success.push(h),
+                    Err(e) => error!("Failed to parse file {:?}", e),
+                }
+            }
+            html_success.sort_by(|a, b| b.date.cmp(&a.date));
+            html_success
+        }
+        Err(e) => {
+            error!("Cannot get org mode files!");
+            panic!("{}", e);
+        }
+    }
 }
