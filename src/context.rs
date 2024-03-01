@@ -17,7 +17,7 @@ type SiteContextKv = HashMap<String, String>;
 
 /// TemplateMap adds some indirection between
 /// routes and the actual templates used in the project.
-/// See [get_template](crate::context::get_template).
+// See [get_template](crate::context::get_template).
 ///
 /// # Example
 ///

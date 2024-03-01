@@ -95,6 +95,29 @@ fn rss() -> Rss {
     Rss::new(Template::render("blog-rss", context))
 }
 
+
+#[get("/resume_pdf")]
+fn resume_pdf() -> std::io::Result<NamedFile> {
+    NamedFile::open(get_template("/resume_pdf"))
+}
+
+#[get("/500")]
+fn crash() -> Result<String, Status> {
+    Err(Status::InternalServerError)
+}
+
+#[get("/blog/<slug>")]
+fn blog_article(slug: String) -> Option<Template> {
+    let mut context = get_base_context("/blog");
+    context.kv.insert("title".to_owned(), "blog".to_owned());
+    context.blog.html.get(&slug).map(|curr_blog| {
+        context.curr_blog = Some(curr_blog);
+        context.kv.insert("curr_slug".to_owned(), slug);
+        Template::render("blog/blog_article", context)
+    })
+}
+
+
 pub fn get_routes() -> ( Vec<Route>, Vec<Catcher>) {
     (
         routes![
