@@ -6,14 +6,13 @@ extern crate log;
 #[cfg(test)]
 mod tests;
 
-mod server;
-mod routes;
-mod context;
 mod blog;
+mod context;
+mod routes;
+mod server;
 
 use context::init_context;
 use server::start_server;
-
 
 fn main() {
     simple_logger::SimpleLogger::new()
@@ -22,4 +21,4 @@ fn main() {
         .unwrap();
     init_context();
     start_server().launch();
-} 
+}

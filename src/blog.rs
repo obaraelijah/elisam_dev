@@ -1,13 +1,22 @@
-use std::collections::HashMap;
-use select::document::Document;
-use select::predicate::{Class, Attr, Name};
-use std::path::PathBuf;
-use std::{ io, fs};
-use std::ffi::OsStr;
-use serde::Serialize;
 use chrono::NaiveDate;
-use log::{error, info};
-
+use log::{
+    error,
+    info,
+};
+use select::document::Document;
+use select::predicate::{
+    Attr,
+    Class,
+    Name,
+};
+use serde::Serialize;
+use std::collections::HashMap;
+use std::ffi::OsStr;
+use std::path::PathBuf;
+use std::{
+    fs,
+    io,
+};
 
 type Slug = String;
 
@@ -97,7 +106,6 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
         None => return Err(ParsingError::CannotFindDate(blog_file.to_path_buf())),
     };
 
-    
     // <2024-03-01 Fri> == <%Y-%m-%d %a>
     let date = match NaiveDate::parse_from_str(&date_string[..], "<%Y-%m-%d %a>") {
         Ok(d) => d,
@@ -150,7 +158,6 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
         slug,
         footnotes,
     })
-
 }
 
 pub fn get_org_mode_files(blog_root: &str) -> Vec<OrgModeHtml> {

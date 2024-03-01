@@ -1,12 +1,20 @@
-use rocket_contrib::templates::Template;
-use rocket_contrib::serve::StaticFiles;
-use rocket::response::NamedFile;
 use rocket::http::Status;
+use rocket::response::NamedFile;
+use rocket_contrib::serve::StaticFiles;
+use rocket_contrib::templates::Template;
 
-use crate::context::{get_base_context, get_template};
-use rocket::{http, Request};
-use rocket::{Route, Catcher};
-
+use crate::context::{
+    get_base_context,
+    get_template,
+};
+use rocket::{
+    http,
+    Request,
+};
+use rocket::{
+    Catcher,
+    Route,
+};
 
 #[get("/")]
 fn index() -> Template {
@@ -95,7 +103,6 @@ fn rss() -> Rss {
     Rss::new(Template::render("blog-rss", context))
 }
 
-
 #[get("/resume_pdf")]
 fn resume_pdf() -> std::io::Result<NamedFile> {
     NamedFile::open(get_template("/resume_pdf"))
@@ -116,7 +123,6 @@ fn blog_article(slug: String) -> Option<Template> {
         Template::render("blog/blog_article", context)
     })
 }
-
 
 pub fn get_routes() -> (StaticFiles, Vec<Route>, Vec<Catcher>) {
     (

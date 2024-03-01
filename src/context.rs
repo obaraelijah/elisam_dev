@@ -1,8 +1,12 @@
 use lazy_static::lazy_static;
-use std::collections::HashMap;
 use serde::Serialize;
+use std::collections::HashMap;
 
-use crate::blog::{get_org_blog, OrgBlog, OrgModeHtml};
+use crate::blog::{
+    get_org_blog,
+    OrgBlog,
+    OrgModeHtml,
+};
 
 /// BLOG_ROOT is the relative path to blog
 pub static BLOG_ROOT: &str = "blog/";
@@ -25,7 +29,6 @@ type SiteContextKv = HashMap<String, String>;
 /// let template: &'static str = get_template("/blog")
 /// assert_eq!(template, "blog/blog_root")
 type TemplateMap = HashMap<&'static str, &'static str>;
-
 
 #[derive(Serialize, Debug)]
 pub struct SiteContext<'a> {
