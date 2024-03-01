@@ -77,7 +77,7 @@ lazy_static! {
             "web_sep" =>  "--",
             "admin_email" =>  "elijahobara357@gmail.com",
             "full_name" =>  "Elijah Samson",
-            "internet_handle" =>  "elijahsam",
+            "internet_handle" =>  "elijah samson",
             "my_email" =>  "elijahobara357@gmail.com",
             "github_url" => "https://github.com/obaraelijah",
             "github_repo_url" => "https://github.com/obaraelijah/elisam_dev",

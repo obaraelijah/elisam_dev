@@ -1,0 +1,59 @@
+{% extends "centerpage" %}
+
+{% block content %}
+<div class="monospace">
+    <div>
+        <div class="container center-desktop d-flex h-100">
+            <div class="row align-items-center w-100">
+                <div class="align-self-center bordered mx-auto index-card">
+                    <h3> {{ base.internet_handle }} | <a href="{{ base.github_url }}" target="_blank"> Github<span class="sr-only">(current)</span></a></h3>
+                    <br>
+                    These are projects I work on for fun.
+                    I have recently taken an interest in <b>Databases</b> and related <b>Data-Structures</b>.
+                    I usually code in <b>Rust</b> and <b>Python</b>.
+                    <br>
+                    <br>
+                    Below is a list of some of my projects:
+                    <br>
+                    <br>
+                    <ul class="list-group">
+                        <li class="list-group-item">
+                            <a href="{{ base.github_url }}/x7" target="_blank">
+                                x7
+                            </a>
+                            <br>
+                            Self-documenting written in rust, featuring a convenient FFI system, stateful records, and more.<br>
+                            Used in redis-oxide as a scripting language (sorted sets).<br>
+                            Rust/Lisp
+                        </li>
+                        <li class="list-group-item">
+                            <a href="{{ base.github_url }}/elisam_dev" target="_blank">
+                                delisam_dev
+                            </a>
+                            <br>
+                            My personal website and blog.<br>
+                            Rust/Rocket/Bootstrap/Tera
+                        </li>
+                        <li class="list-group-item">
+                        <li class="list-group-item">
+                            <a href="{{ base.github_url }}/kv" target="_blank">
+                                kv
+                            </a>
+                            <br>
+                            Rust key-value storage with bash hooks. <br>
+                            Rust/Serde/Bash
+                        </li>
+                    </ul>
+                    <br>
+                    <br>
+                    <a href="{{ base.github_url }}" target="_blank">View Github<span class="sr-only">(current)</span></a>
+                    <br>
+                    <br>
+                    <a href="{{ base.root_uri }}">Head Back to Home<span class="sr-only">(current)</span></a>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
