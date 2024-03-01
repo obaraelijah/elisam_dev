@@ -59,7 +59,41 @@ fn server_err(req: &Request<'_>) -> Template {
     Template::render(get_template("500"), context)
 }
 
+// allow web crawling
+#[get("/robots.txt")]
+fn robots_txt() -> &'static str {
+    r#"
+    # robots.txt
+    User-agent: *
+    Disallow:
+    "#
+}
 
+#[derive(Responder)]
+struct Rss {
+    inner: Template,
+    header: http::ContentType,
+}
+
+impl Rss {
+    fn new(inner: Template) -> Self {
+        Self {
+            inner,
+            header: http::ContentType::new("application", "rss+xml"),
+        }
+    }
+}
+
+#[get("/feed")]
+fn feed() -> Rss {
+    rss()
+}
+
+#[get("/rss")]
+fn rss() -> Rss {
+    let context = get_base_context("/blog");
+    Rss::new(Template::render("blog-rss", context))
+}
 
 pub fn get_routes() -> ( Vec<Route>, Vec<Catcher>) {
     (
@@ -69,6 +103,9 @@ pub fn get_routes() -> ( Vec<Route>, Vec<Catcher>) {
             blog_index,
             linkedin,
             github,
+            robots_txt,
+            rss,
+            feed
         ],
         catchers![not_found, server_err],
     )
