@@ -1,8 +1,12 @@
 use std::collections::HashMap;
 use select::document::Document;
+use select::predicate::{Class, Attr, Name};
 use std::path::PathBuf;
 use std::{ io, fs};
 use std::ffi::OsStr;
+use serde::Serialize;
+use chrono::NaiveDate;
+use log::{error, info};
 
 
 type Slug = String;
@@ -62,10 +66,88 @@ fn get_html_files(base: &str) -> Result<Vec<PathBuf>, io::Error> {
 }
 
 pub enum ParsingError {
-
+    CannotParseHtml(PathBuf),
+    CannotFindTitle(PathBuf),
+    CannotFindDate(PathBuf),
+    CannotFindToc(PathBuf),
+    CannotParseDate(PathBuf),
+    CannotFindContents(PathBuf),
+    CannotFindFirstParagraph(PathBuf),
+    CannotMakeSlug(PathBuf),
 }
 
 pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingError> {
     let file_contents = fs::read_to_string(&blog_file);
+    let document = match file_contents {
+        Ok(contents) => Document::from(&contents[..]),
+        Err(e) => {
+            println!("{:?}", e);
+            return Err(ParsingError::CannotParseHtml(blog_file.to_path_buf()));
+        }
+    };
+
+    let title = match document.find(Class("title")).next() {
+        Some(t) => t.text(),
+        None => return Err(ParsingError::CannotFindTitle(blog_file.to_path_buf())),
+    };
+
+    let date_string = match document.find(Class("timestamp")).next() {
+        Some(date) => date.text(),
+        None => return Err(ParsingError::CannotFindDate(blog_file.to_path_buf())),
+    };
+
+    
+    // <2024-03-01 Fri> == <%Y-%m-%d %a>
+    let date = match NaiveDate::parse_from_str(&date_string[..], "<%Y-%m-%d %a>") {
+        Ok(d) => d,
+        Err(e) => {
+            error!("Could not parse date for {:?}, reason {:?}", date_string, e);
+            return Err(ParsingError::CannotParseDate(blog_file.to_path_buf()));
+        }
+    };
+
+    let pub_date: String = date.format("%a, %d %b %Y 1:01:00 EST").to_string();
+
+    let toc = match document.find(Attr("id", "text-table-of-contents")).next() {
+        Some(toc) => toc.html(),
+        None => return Err(ParsingError::CannotFindToc(blog_file.to_path_buf())),
+    };
+
+    let html = match document.find(Class("outline-2")).next() {
+        Some(org_body) => org_body,
+        None => return Err(ParsingError::CannotFindContents(blog_file.to_path_buf())),
+    };
+
+    // The first paragraph is likely a good enough description.
+    let desc = match html.find(Name("p")).next() {
+        Some(first_para) => first_para.text(),
+        None => {
+            return Err(ParsingError::CannotFindFirstParagraph(
+                blog_file.to_path_buf(),
+            ))
+        }
+    };
+
+    let slug_string = blog_file.clone().into_os_string().into_string().unwrap();
+
+    let slug = match slug_string.split('/').last() {
+        Some(s) => s.replace(".html", ""),
+        None => return Err(ParsingError::CannotMakeSlug(blog_file.to_path_buf())),
+    };
+
+    let footnotes = document.find(Class("footdef")).map(|x| x.html()).collect();
+
+    info!("Successfully parsed {:?}", blog_file);
+
+    Ok(OrgModeHtml {
+        title,
+        date,
+        pub_date,
+        toc,
+        desc,
+        html: html.html(),
+        slug,
+        footnotes,
+    })
 
 }
