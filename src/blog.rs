@@ -173,3 +173,13 @@ pub fn get_org_mode_files(blog_root: &str) -> Vec<OrgModeHtml> {
         }
     }
 }
+
+pub fn get_org_blog(blog_root: &str) -> OrgBlog {
+    let blog_files = get_org_mode_files(blog_root);
+    let html: HashMap<Slug, OrgModeHtml> = blog_files
+        .clone()
+        .into_iter()
+        .map(|x| (x.slug.clone(), x))
+        .collect();
+    OrgBlog { html, blog_files }
+}
