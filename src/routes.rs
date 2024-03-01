@@ -118,8 +118,9 @@ fn blog_article(slug: String) -> Option<Template> {
 }
 
 
-pub fn get_routes() -> ( Vec<Route>, Vec<Catcher>) {
+pub fn get_routes() -> (StaticFiles, Vec<Route>, Vec<Catcher>) {
     (
+        StaticFiles::from("static"),
         routes![
             index,
             resume,
@@ -127,6 +128,9 @@ pub fn get_routes() -> ( Vec<Route>, Vec<Catcher>) {
             linkedin,
             github,
             robots_txt,
+            resume_pdf,
+            crash,
+            blog_article,
             rss,
             feed
         ],
