@@ -1,0 +1,30 @@
+{% extends "centerpage" %}
+
+{% block centerpage %}
+<h3> {{ base.internet_handle }}  | <a href="#"> Home<span class="sr-only">(current)</span></a></h3>
+<span> {{ base.full_name }} {{ base.web_sep }} {{ base.my_email }} </span>
+<br>
+<br>
+Hi, I'm a SWE  @ <b>prisma.io</b> and an electrical and tecommunication engineering graduate from  Multimedia University.
+I currently work on core cryptographic systems and make sure they never fall over.
+<br>
+<br>
+I have worked in <b>Security & Reliability</b>, <b>Security Orchestration & Automation</b>, <b>Ad Tech</b>, <b>Healthcare</b>, and
+<b>Enterprise R&D</b>.
+<br>
+<br>
+I've also <b>contracted</b> as well; making sure deliverables arrive on time and quickly integrating myself into the team.
+<br>
+<br>
+My go-to languages include <b>Python</b>, <b>Rust</b>, <b>Javascript</b>, <b>C</b>, and <b>Bash</b>.
+My go-to tech includes <b>Django</b>, <b>Kubernetes</b>, <b>Docker</b>, and <b>React</b>.
+Check out my
+<a href="/resume">Resume<span class="sr-only">(Resume)</span></a>
+or <a href="/github">Github<span class="sr-only">(Github)</span></a> for more details.
+<br>
+<br>
+If you're interested, I blog about random tech related things.
+You can check out my blog
+<a href="/blog">here<span class="sr-only">(blog)</span></a>.
+</div>
+{% endblock centerpage %}

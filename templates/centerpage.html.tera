@@ -1,3 +1,5 @@
+{% extends "base" %}
+
 {% block content %}
 <div class="monospace">
      <div>
