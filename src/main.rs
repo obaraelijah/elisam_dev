@@ -2,7 +2,6 @@
 #[macro_use]
 extern crate rocket;
 extern crate log;
-
 #[cfg(test)]
 mod tests;
 

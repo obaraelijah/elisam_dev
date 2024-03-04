@@ -133,3 +133,4 @@ lazy_static! {
 pub fn get_template(uri: &str) -> &str {
     TEMPLATE_MAP.get(uri).unwrap()
 }
+
