@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 EXISTING_INSTANCE="$(pidof target/release/elisam_dev)"

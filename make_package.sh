@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 rm *.zip
 
 BIN_NAME="elisam_dev"
