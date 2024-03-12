@@ -163,7 +163,7 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
 pub fn get_org_mode_files(blog_root: &str) -> Vec<OrgModeHtml> {
     match get_html_files(blog_root) {
         Ok(org) => {
-            let html_res: Vec<_> = org.iter().map(|o| get_html_contents(&o)).collect();
+            let html_res: Vec<_> = org.iter().map(|o| get_html_contents(o)).collect();
             let mut html_success: Vec<OrgModeHtml> = Vec::new();
             for html in html_res {
                 match html {
