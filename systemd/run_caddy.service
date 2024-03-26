@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/caddy run -config /home/sam/caddy/Caddyfile
+ExecStart=/usr/bin/caddy run --config /home/sam/caddy/Caddyfile
 ExecReload=/usr/bin/caddy reload --config /home/sam/caddy/Caddyfile
 Restart=on-failure
 TimeoutStopSec=5s
