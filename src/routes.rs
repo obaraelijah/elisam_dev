@@ -1,20 +1,11 @@
-use rocket::http::Status;
-use rocket::response::NamedFile;
-use rocket_contrib::serve::StaticFiles;
-use rocket_contrib::templates::Template;
+use rocket::fs::NamedFile;
+use rocket::http::{ContentType, Status};
+use rocket::response::{self, Responder, status};
+use rocket::Request;
+use rocket::Route;
+use rocket_dyn_templates::Template;
 
-use crate::context::{
-    get_base_context,
-    get_template,
-};
-use rocket::{
-    http,
-    Request,
-};
-use rocket::{
-    Catcher,
-    Route,
-};
+use crate::context::{get_base_context, get_template};
 
 #[get("/")]
 fn index() -> Template {
@@ -67,7 +58,7 @@ fn server_err(req: &Request<'_>) -> Template {
     Template::render(get_template("500"), context)
 }
 
-// allow web crawling
+// Allow web crawling
 #[get("/robots.txt")]
 fn robots_txt() -> &'static str {
     r#"
@@ -77,18 +68,14 @@ fn robots_txt() -> &'static str {
     "#
 }
 
-#[derive(Responder)]
-struct Rss {
-    inner: Template,
-    header: http::ContentType,
-}
+// Custom RSS responder
+struct Rss(Template);
 
-impl Rss {
-    fn new(inner: Template) -> Self {
-        Self {
-            inner,
-            header: http::ContentType::new("application", "rss+xml"),
-        }
+impl<'r> Responder<'r, 'static> for Rss {
+    fn respond_to(self, req: &'r Request<'_>) -> response::Result<'static> {
+        let mut response = self.0.respond_to(req)?;
+        response.set_header(ContentType::new("application", "rss+xml"));
+        Ok(response)
     }
 }
 
@@ -100,17 +87,17 @@ fn feed() -> Rss {
 #[get("/rss")]
 fn rss() -> Rss {
     let context = get_base_context("/blog");
-    Rss::new(Template::render("blog-rss", context))
+    Rss(Template::render("blog-rss", context))
 }
 
 #[get("/resume_pdf")]
-fn resume_pdf() -> std::io::Result<NamedFile> {
-    NamedFile::open(get_template("/resume_pdf"))
+async fn resume_pdf() -> std::io::Result<NamedFile> {
+    NamedFile::open(get_template("/resume_pdf")).await
 }
 
 #[get("/500")]
-fn crash() -> Result<String, Status> {
-    Err(Status::InternalServerError)
+fn crash() -> status::Custom<&'static str> {
+    status::Custom(Status::InternalServerError, "Server Error")
 }
 
 #[get("/blog/<slug>")]
@@ -124,9 +111,8 @@ fn blog_article(slug: String) -> Option<Template> {
     })
 }
 
-pub fn get_routes() -> (StaticFiles, Vec<Route>, Vec<Catcher>) {
+pub fn get_routes() -> (Vec<Route>, Vec<rocket::Catcher>) {
     (
-        StaticFiles::from("static"),
         routes![
             index,
             resume,

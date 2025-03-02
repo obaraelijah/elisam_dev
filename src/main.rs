@@ -1,4 +1,3 @@
-#![feature(proc_macro_hygiene, decl_macro)]
 #[macro_use]
 extern crate rocket;
 extern crate log;
@@ -13,11 +12,14 @@ mod server;
 use context::init_context;
 use server::start_server;
 
-fn main() {
+#[rocket::main]
+async fn main() -> Result<(), rocket::Error> {
     simple_logger::SimpleLogger::new()
         .with_level(log::LevelFilter::Info)
         .init()
         .unwrap();
     init_context();
-    start_server().launch();
+    let server = start_server();
+    server.launch().await?;
+    Ok(())
 }

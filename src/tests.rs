@@ -1,15 +1,16 @@
 #[cfg(test)]
 mod test {
     use rocket::http::Status;
-    use rocket::local::Client;
+    use rocket::local::asynchronous::Client;
+    use rocket::tokio;
 
-    fn get_client() -> Client {
+    async fn get_client() -> Client {
         use crate::server::start_server;
-        Client::new(start_server()).expect("Failed to start_server!")
+        Client::tracked(start_server()).await.expect("Failed to start_server!")
     }
 
-    #[test]
-    fn static_pages_should_200() {
+    #[tokio::test]
+    async fn static_pages_should_200() {
         let routes = vec![
             "/",
             "/github",
@@ -31,28 +32,28 @@ mod test {
             "/static/css/solarized-dark.css",
             "/static/css/bootstrap-slate.css",
         ];
-        let client = get_client();
+        let client = get_client().await;
         for route in routes {
-            let resp = client.get(route).dispatch();
+            let resp = client.get(route).dispatch().await;
             assert_eq!(resp.status(), Status::Ok);
         }
     }
 
-    #[test]
-    fn unknown_pages_should_404() {
+    #[tokio::test]
+    async fn unknown_pages_should_404() {
         let routes = vec!["/adawdawd", "/ada2wdawd/adawdw", "/ada3dawd/afwf/afwafa"];
-        let client = get_client();
+        let client = get_client().await;
         for route in routes {
-            let resp = client.get(route).dispatch();
+            let resp = client.get(route).dispatch().await;
             println!("{}", route);
             assert_eq!(resp.status(), Status::NotFound);
         }
     }
 
-    #[test]
-    fn five_hundred_page_should_500() {
-        let client = get_client();
-        let resp = client.get("/500").dispatch();
+    #[tokio::test]
+    async fn five_hundred_page_should_500() {
+        let client = get_client().await;
+        let resp = client.get("/500").dispatch().await;
         assert_eq!(resp.status(), Status::InternalServerError);
     }
 
@@ -160,10 +161,7 @@ mod test {
 
     #[test]
     fn org_parser_should_throw_applicable_errors() {
-        use crate::blog::{
-            get_html_contents,
-            ParsingError,
-        };
+        use crate::blog::{get_html_contents, ParsingError};
         use std::path::PathBuf;
         let missing_date_loc = "tests/bad-org-mode-files/missing-date.html";
         let missing_date = PathBuf::from(missing_date_loc);

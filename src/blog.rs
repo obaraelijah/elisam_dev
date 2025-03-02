@@ -1,41 +1,21 @@
 use chrono::NaiveDate;
-use log::{
-    error,
-    info,
-};
+use log::{error, info};
 use select::document::Document;
-use select::predicate::{
-    Attr,
-    Class,
-    Name,
-};
+use select::predicate::{Attr, Class, Name};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::{
-    fs,
-    io,
-};
+use std::{fs, io};
 
 type Slug = String;
-
-// OrgBlog represents all blog related items.
-// See [OrgBlog](crate::blog::OrgBlog) and
-// [get_org_blog](crate::blog::get_org_blog).
-//
-// # Example
-//
-// let org_blog: OrgBlog = get_org_blog()
 
 #[derive(Serialize, Debug)]
 pub struct OrgBlog {
     pub html: HashMap<Slug, OrgModeHtml>,
-    // Blog files should be sorted by date (newest is at head)
     pub blog_files: Vec<OrgModeHtml>,
 }
 
-// OrgModeHtml represents a particular org-mode blog article.
 #[derive(Serialize, Debug, Clone)]
 pub struct OrgModeHtml {
     pub title: String,
@@ -46,32 +26,6 @@ pub struct OrgModeHtml {
     pub html: String,
     pub slug: String,
     pub footnotes: Vec<String>,
-}
-
-fn get_html_files(base: &str) -> Result<Vec<PathBuf>, io::Error> {
-    let base = PathBuf::from(base);
-    if !base.is_dir() {
-        panic!("BLOG_ROOT is not a directory!")
-    }
-    let mut html_files: Vec<PathBuf> = Vec::new();
-    for entry in fs::read_dir(base)? {
-        let entry = entry?;
-        let path = entry.path();
-        if !path.is_dir() {
-            continue;
-        }
-        for file in fs::read_dir(path)? {
-            let file = file?;
-            let path = file.path();
-            if path.is_dir() {
-                continue;
-            }
-            if path.extension().and_then(OsStr::to_str).unwrap_or("") == "html" {
-                html_files.push(path);
-            }
-        }
-    }
-    Ok(html_files)
 }
 
 #[derive(Debug, PartialEq)]
@@ -86,63 +40,98 @@ pub enum ParsingError {
     CannotMakeSlug(PathBuf),
 }
 
+fn get_html_files(base: &str) -> Result<Vec<PathBuf>, io::Error> {
+    let base = PathBuf::from(base);
+    if !base.is_dir() {
+        panic!("BLOG_ROOT is not a directory!");
+    }
+    let mut html_files: Vec<PathBuf> = Vec::new();
+    for entry in fs::read_dir(&base)? {
+        let entry = entry?;
+        let path = entry.path();
+        if !path.is_dir() {
+            continue;
+        }
+        for file in fs::read_dir(&path)? {
+            let file = file?;
+            let path = file.path();
+            if path.is_dir() {
+                continue;
+            }
+            if path.extension().and_then(OsStr::to_str) == Some("html") {
+                html_files.push(path);
+            }
+        }
+    }
+    Ok(html_files)
+}
+
 pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingError> {
-    let file_contents = fs::read_to_string(&blog_file);
-    let document = match file_contents {
-        Ok(contents) => Document::from(&contents[..]),
-        Err(e) => {
-            println!("{:?}", e);
-            return Err(ParsingError::CannotParseHtml(blog_file.to_path_buf()));
-        }
-    };
+    let file_contents = fs::read_to_string(blog_file)
+        .map_err(|_| ParsingError::CannotParseHtml(blog_file.to_path_buf()))?;
+    let document = Document::from(&file_contents[..]);
+    info!("Parsing file: {:?}", blog_file);
+    info!("File contents preview: {:?}", &file_contents[..file_contents.len().min(200)]);
 
-    let title = match document.find(Class("title")).next() {
-        Some(t) => t.text(),
-        None => return Err(ParsingError::CannotFindTitle(blog_file.to_path_buf())),
-    };
+    let title = document
+        .find(Name("title"))
+        .next()
+        .or_else(|| document.find(Class("title")).next())
+        .or_else(|| document.find(Name("h1")).next())
+        .map(|node| node.text())
+        .unwrap_or_else(|| {
+            blog_file
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("Untitled")
+                .to_string()
+        });
 
-    let date_string = match document.find(Class("timestamp")).next() {
-        Some(date) => date.text(),
-        None => return Err(ParsingError::CannotFindDate(blog_file.to_path_buf())),
-    };
+    let date_string = document
+        .find(Class("timestamp"))
+        .next()
+        .map(|node| node.text())
+        .unwrap_or_else(|| "<1970-01-01 Thu>".to_string());
 
-    // <2024-03-01 Fri> == <%Y-%m-%d %a>
-    let date = match NaiveDate::parse_from_str(&date_string[..], "<%Y-%m-%d %a>") {
-        Ok(d) => d,
-        Err(e) => {
+    let date = NaiveDate::parse_from_str(&date_string, "<%Y-%m-%d %a>")
+        .map_err(|e| {
             error!("Could not parse date for {:?}, reason {:?}", date_string, e);
-            return Err(ParsingError::CannotParseDate(blog_file.to_path_buf()));
-        }
-    };
+            ParsingError::CannotParseDate(blog_file.to_path_buf())
+        })?;
 
-    let pub_date: String = date.format("%a, %d %b %Y 1:01:00 EST").to_string();
+    let pub_date = date.format("%a, %d %b %Y 1:01:00 EST").to_string();
 
-    let toc = match document.find(Attr("id", "text-table-of-contents")).next() {
-        Some(toc) => toc.html(),
-        None => return Err(ParsingError::CannotFindToc(blog_file.to_path_buf())),
-    };
+    let toc = document
+        .find(Attr("id", "text-table-of-contents"))
+        .next()
+        .map(|node| node.html())
+        .unwrap_or_else(|| "<p>No table of contents available</p>".to_string());
 
-    let html = match document.find(Class("outline-2")).next() {
-        Some(org_body) => org_body,
-        None => return Err(ParsingError::CannotFindContents(blog_file.to_path_buf())),
-    };
+    // Use <body> as fallback if no outline-2, then <html> as last resort
+    let outline_node = document
+        .find(Class("outline-2"))
+        .next()
+        .or_else(|| document.find(Name("body")).next())
+        .or_else(|| document.find(Name("html")).next())
+        .expect("HTML document should have at least an <html> node");
 
-    // The first paragraph is likely a good enough description.
-    let desc = match html.find(Name("p")).next() {
-        Some(first_para) => first_para.text(),
-        None => {
-            return Err(ParsingError::CannotFindFirstParagraph(
-                blog_file.to_path_buf(),
-            ))
-        }
-    };
+    let desc = outline_node
+        .find(Name("p"))
+        .next()
+        .map(|node| node.text())
+        .unwrap_or_else(|| "No description available".to_string());
 
-    let slug_string = blog_file.clone().into_os_string().into_string().unwrap();
+    let html = outline_node.html();
 
-    let slug = match slug_string.split('/').last() {
-        Some(s) => s.replace(".html", ""),
-        None => return Err(ParsingError::CannotMakeSlug(blog_file.to_path_buf())),
-    };
+    let slug_string = blog_file
+        .to_str()
+        .ok_or(ParsingError::CannotMakeSlug(blog_file.to_path_buf()))?;
+
+    let slug = slug_string
+        .split('/')
+        .last()
+        .ok_or(ParsingError::CannotMakeSlug(blog_file.to_path_buf()))?
+        .replace(".html", "");
 
     let footnotes = document.find(Class("footdef")).map(|x| x.html()).collect();
 
@@ -154,7 +143,7 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
         pub_date,
         toc,
         desc,
-        html: html.html(),
+        html,
         slug,
         footnotes,
     })
@@ -175,8 +164,8 @@ pub fn get_org_mode_files(blog_root: &str) -> Vec<OrgModeHtml> {
             html_success
         }
         Err(e) => {
-            error!("Cannot get org mode files!");
-            panic!("{}", e);
+            error!("Cannot get org mode files: {:?}", e);
+            panic!("Failed to read blog directory: {}", e);
         }
     }
 }
