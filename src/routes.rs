@@ -1,24 +1,13 @@
 use crate::context::get_base_context;
 use axum::{
     Router,
-    extract::{
-        Extension,
-        OriginalUri,
-        Path,
-    },
+    extract::{Extension, OriginalUri, Path},
     http::StatusCode,
-    response::{
-        IntoResponse,
-        Redirect,
-        Response,
-    },
+    response::{IntoResponse, Redirect, Response},
     routing::get,
 };
 use axum_template::RenderHtml;
-use axum_template::{
-    TemplateEngine,
-    engine::Engine,
-};
+use axum_template::{TemplateEngine, engine::Engine};
 use tera::Tera;
 use tower_http::services::ServeFile;
 
@@ -56,6 +45,7 @@ pub fn get_routes() -> Router {
         .route("/rss", get(rss))
         .route_service("/resume_pdf", ServeFile::new("resume/elijah_resume.pdf"))
         .route("/500", get(crash))
+        .route("/health", get(health))
         .route("/blog/{slug}", get(blog_article))
         .fallback(not_found)
         .layer(axum::middleware::from_fn(redirect_trailing_slash))
@@ -112,6 +102,10 @@ async fn rss(Extension(engine): Extension<Engine<Tera>>) -> Response {
 
 async fn crash() -> impl IntoResponse {
     (StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error")
+}
+
+async fn health() -> impl IntoResponse {
+    (StatusCode::OK, "OK")
 }
 
 async fn blog_article(

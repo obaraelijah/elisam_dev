@@ -1,22 +1,12 @@
 use chrono::NaiveDate;
-use log::{
-    error,
-    info,
-};
+use log::{error, info};
 use select::document::Document;
-use select::predicate::{
-    Attr,
-    Class,
-    Name,
-};
+use select::predicate::{Attr, Class, Name};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::{
-    fs,
-    io,
-};
+use std::{fs, io};
 
 type Slug = String;
 

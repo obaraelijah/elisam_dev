@@ -2,11 +2,7 @@ use lazy_static::lazy_static;
 use serde::Serialize;
 use std::collections::HashMap;
 
-use crate::blog::{
-    OrgBlog,
-    OrgModeHtml,
-    get_org_blog,
-};
+use crate::blog::{OrgBlog, OrgModeHtml, get_org_blog};
 
 /// BLOG_ROOT is the relative path to blog
 pub static BLOG_ROOT: &str = "blog/";
