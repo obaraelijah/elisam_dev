@@ -1,13 +1,24 @@
 use crate::context::get_base_context;
 use axum::{
-    extract::{Extension, OriginalUri, Path},
-    http::StatusCode,
-    response::{IntoResponse, Redirect, Response},
-    routing::get,
     Router,
+    extract::{
+        Extension,
+        OriginalUri,
+        Path,
+    },
+    http::StatusCode,
+    response::{
+        IntoResponse,
+        Redirect,
+        Response,
+    },
+    routing::get,
 };
 use axum_template::RenderHtml;
-use axum_template::{engine::Engine, TemplateEngine};
+use axum_template::{
+    TemplateEngine,
+    engine::Engine,
+};
 use tera::Tera;
 use tower_http::services::ServeFile;
 

@@ -1,12 +1,22 @@
 use chrono::NaiveDate;
-use log::{error, info};
+use log::{
+    error,
+    info,
+};
 use select::document::Document;
-use select::predicate::{Attr, Class, Name};
+use select::predicate::{
+    Attr,
+    Class,
+    Name,
+};
 use serde::Serialize;
 use std::collections::HashMap;
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::{fs, io};
+use std::{
+    fs,
+    io,
+};
 
 type Slug = String;
 
@@ -71,7 +81,10 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
         .map_err(|_| ParsingError::CannotParseHtml(blog_file.to_path_buf()))?;
     let document = Document::from(&file_contents[..]);
     info!("Parsing file: {:?}", blog_file);
-    info!("File contents preview: {:?}", &file_contents[..file_contents.len().min(200)]);
+    info!(
+        "File contents preview: {:?}",
+        &file_contents[..file_contents.len().min(200)]
+    );
 
     let title = document
         .find(Name("title"))
@@ -93,11 +106,10 @@ pub fn get_html_contents(blog_file: &PathBuf) -> Result<OrgModeHtml, ParsingErro
         .map(|node| node.text())
         .unwrap_or_else(|| "<1970-01-01 Thu>".to_string());
 
-    let date = NaiveDate::parse_from_str(&date_string, "<%Y-%m-%d %a>")
-        .map_err(|e| {
-            error!("Could not parse date for {:?}, reason {:?}", date_string, e);
-            ParsingError::CannotParseDate(blog_file.to_path_buf())
-        })?;
+    let date = NaiveDate::parse_from_str(&date_string, "<%Y-%m-%d %a>").map_err(|e| {
+        error!("Could not parse date for {:?}, reason {:?}", date_string, e);
+        ParsingError::CannotParseDate(blog_file.to_path_buf())
+    })?;
 
     let pub_date = date.format("%a, %d %b %Y 1:01:00 EST").to_string();
 

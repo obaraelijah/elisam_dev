@@ -2,7 +2,11 @@ use lazy_static::lazy_static;
 use serde::Serialize;
 use std::collections::HashMap;
 
-use crate::blog::{get_org_blog, OrgBlog, OrgModeHtml};
+use crate::blog::{
+    OrgBlog,
+    OrgModeHtml,
+    get_org_blog,
+};
 
 /// BLOG_ROOT is the relative path to blog
 pub static BLOG_ROOT: &str = "blog/";
@@ -72,6 +76,3 @@ pub fn get_base_context(nav_href_uri: &str) -> SiteContext<'_> {
         curr_blog: None,
     }
 }
-
-
-
