@@ -164,11 +164,15 @@ pub fn get_org_mode_files(blog_root: &str) -> Result<Vec<OrgModeHtml>> {
 }
 
 pub fn get_org_blog(blog_root: &str) -> Result<OrgBlog> {
+    println!("Starting get_org_blog");
     let blog_files = get_org_mode_files(blog_root)?;
+    println!("Got {} blog files", blog_files.len());
+    
     let html: HashMap<Slug, OrgModeHtml> = blog_files
-        .clone()
-        .into_iter()
-        .map(|x| (x.slug.clone(), x))
+        .iter()
+        .map(|x| (x.slug.clone(), x.clone()))
         .collect();
+    println!("Created hashmap with {} entries", html.len());
+    
     Ok(OrgBlog { html, blog_files })
 }

@@ -1,4 +1,4 @@
-{% extends "centerpage.html.tera" %}
+{% extends "base.html.tera" %}
 
 {% block content %}
 <div class="monospace">
@@ -14,3 +14,4 @@
      </div>
 </div>
 {% endblock content %}
+```

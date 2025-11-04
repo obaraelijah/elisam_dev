@@ -326,7 +326,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "elijah-blog"
+name = "elisam_dev"
 version = "0.3.0"
 dependencies = [
  "chrono",
