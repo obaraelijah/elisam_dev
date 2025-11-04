@@ -1,4 +1,4 @@
-{% extends "base" %}
+{% extends "centerpage.html.tera" %}
 
 {% block content %}
 <div class="monospace">

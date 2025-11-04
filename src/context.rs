@@ -73,41 +73,5 @@ pub fn get_base_context(nav_href_uri: &str) -> SiteContext<'_> {
     }
 }
 
-pub fn init_context() {
-    println!("{}", get_base_context("/").blog.blog_files.len());
-}
 
-macro_rules! template_map {
-    { $($key:expr => $value:expr),+ } => {
-        {
-            let mut m = TemplateMap::new();
-            $(
-                m.insert($key, $value);
-            )+
-            m
-        }
-    };
-}
 
-lazy_static! {
-    pub static ref TEMPLATE_MAP: TemplateMap = template_map! {
-        "/" => "index",
-        "404" => "404",
-        "500" => "500",
-        "/blog" => "blog/blog_root",
-        "/linkedin" => "linkedin",
-        "/github" => "github",
-        "/resume_pdf" => "resume/elijah_resume.pdf",
-        "/resume" => "resume",
-        "/rss" => "blog-rss",
-        "/feed" => "blog-rss",
-        "blog/blog_article" => "blog/blog_article" // Match route usage
-    };
-}
-
-pub fn get_template(uri: &str) -> &str {
-    TEMPLATE_MAP.get(uri).copied().unwrap_or_else(|| {
-        eprintln!("No template mapped for URI: {}", uri);
-        "404" // Fallback to 404 instead of panicking
-    })
-}
