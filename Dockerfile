@@ -51,6 +51,7 @@ COPY --from=website-builder /usr/src/app/target/release/elisam_dev ./elisam_dev
 COPY blog ./blog
 COPY resume ./resume
 COPY templates ./templates
+COPY static ./static
 
 # Change ownership to non-root user
 RUN chown -R appuser:appuser /app
