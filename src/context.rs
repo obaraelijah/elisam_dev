@@ -2,73 +2,98 @@ use lazy_static::lazy_static;
 use serde::Serialize;
 use std::collections::HashMap;
 
-use crate::blog::{OrgBlog, OrgModeHtml, get_org_blog};
+use crate::blog::{OrgBlog, OrgModeHtml};
 
 /// BLOG_ROOT is the relative path to blog
 pub static BLOG_ROOT: &str = "blog/";
 
-/// SiteContextKv represents all key-value variables used in this project.
+/// SiteContextKv represents all key-value variables used in
+/// this project.
+///
+/// # Example
+///
+/// let mut foo = SiteContextKv::new()
+/// foo.insert("key".to_owned(), "value".to_owned())
 type SiteContextKv = HashMap<String, String>;
 
-/// TemplateMap adds indirection between routes and templates.
-type TemplateMap = HashMap<&'static str, &'static str>;
-
+/// SiteContext represents the entire context required to render
+/// this website. See [get_base_context](crate::context::get_base_context)
 #[derive(Serialize, Debug)]
 pub struct SiteContext<'a> {
+    /// base is the static key-value context of the website.
+    /// All of the information in base comes from
+    /// [STATIC_SITE_CONTEXT_KV](crate::context::STATIC_SITE_CONTEXT_KV)
     pub base: &'static SiteContextKv,
+    /// kv is the dynamic key-value context of the website.
     pub kv: SiteContextKv,
-    pub blog: &'static OrgBlog,
+    /// blog is all blog related items, see [OrgBlog](crate::context::OrgBlog)
+    pub blog: &'a OrgBlog,
+    /// curr_blog is the current blog article, if applicable.
     pub curr_blog: Option<&'a OrgModeHtml>,
 }
 
-macro_rules! site_context {
+macro_rules! site_context(
     { $($key:expr => $value:expr),+ } => {
         {
             let mut m = SiteContextKv::new();
             $(
                 m.insert($key.to_owned(), $value.to_owned());
             )+
-            m
+                m
         }
     };
-}
-
-lazy_static! {
-    static ref STATIC_BLOG_ENTRIES: OrgBlog = get_org_blog(BLOG_ROOT);
-}
+);
 
 lazy_static! {
     static ref STATIC_SITE_CONTEXT_KV: SiteContextKv = {
         site_context! {
-            "domain_name" => "realelijahobara.tech",
-            "nav_site_href" => "/",
-            "root_uri" => "/",
-            "blog_uri" => "/blog",
-            "resume_uri" => "/resume",
-            "linkedin_uri" => "/linkedin",
-            "github_uri" => "/github",
-            "resume_pdf_uri" => "/resume_pdf",
-            "rss_uri" => "/rss",
-            "crash_uri" => "/500",
-            "web_sep" => "--",
-            "admin_email" => "elijahobara357@gmail.com",
-            "full_name" => "Elijah Samson",
-            "internet_handle" => "elijah samson",
-            "my_email" => "elijahobara357@gmail.com",
-            "github_url" => "https://github.com/obaraelijah",
-            "github_repo_url" => "https://github.com/obaraelijah/elisam_dev",
-            "linkedin_url" => "https://www.linkedin.com/in/elijah-samson-16619912a/"
+            "domain_name" =>  "elijah.ca",
+            "nav_site_href" =>  "/",
+            "root_uri" =>  "/",
+            "blog_uri" =>  "/blog",
+            "resume_uri" =>  "/resume",
+            "linkedin_uri" =>  "/linkedin",
+            "github_uri" =>  "/github",
+            "resume_uri" =>  "/resume",
+            "resume_pdf_uri" =>  "/elijah_resume.pdf",
+            "rss_uri" =>  "/rss",
+            "crash_uri" =>  "/500",
+            "web_sep" =>  "--",
+            "admin_email" =>  "eli@elijah.ca",
+            "full_name" =>  "Elijah Samson",
+            "internet_handle" =>  "elijah",
+            "my_email" =>  "elijah@elijah.ca",
+            "github_url" => "https://github.com/elijah",
+            "github_repo_url" => "https://github.com/elijah/elijah-blog",
+            "linkedin_url" => "https://www.linkedin.com/in/elijah"
         }
     };
 }
 
-pub fn get_base_context(nav_href_uri: &str) -> SiteContext<'_> {
-    let mut kv = SiteContextKv::with_capacity(1); // Pre-allocate for one entry
-    kv.insert("nav_site_href".to_owned(), nav_href_uri.to_owned());
+use tera::Context;
+
+impl<'a> From<&SiteContext<'a>> for Context {
+    fn from(site_context: &SiteContext<'a>) -> Self {
+        let mut context = Context::new();
+        context.insert("base", &site_context.base);
+        context.insert("kv", &site_context.kv);
+        context.insert("blog", &site_context.blog);
+        context.insert("curr_blog", &site_context.curr_blog);
+        context
+    }
+}
+
+/// get_base_context
+pub fn get_base_context<'a>(nav_href_uri: &str, blog: &'a OrgBlog) -> SiteContext<'a> {
     SiteContext {
         base: &STATIC_SITE_CONTEXT_KV,
-        kv,
-        blog: &STATIC_BLOG_ENTRIES,
+        // TODO: Not waste memory like this.
+        kv: {
+            let mut tmp = SiteContextKv::new();
+            tmp.insert("nav_site_href".to_owned(), nav_href_uri.to_owned());
+            tmp
+        },
+        blog,
         curr_blog: None,
     }
 }
